@@ -6,9 +6,6 @@ Text mining and analysis on health discussions on https://www.suomi24.fi/
 
 This project concerns a rough exploration of the Finnish Suomi24 dataset in order to map the discussions related to health, answering the questions: What are the main health issues that much interest citizens? What are their key worries, inspirations? How such worries, inspirations are manifested in the forum? 
 
-## Challenge and our solution
-
-The most frequently prescribed medicine for Parkinson’s disease, L-Dopa, is found to be addictive -- psychologically and physiologically. How to find if the patient needs the medicine to amiliorate his/her symptoms or to “feel good”? 
 
 ## Requirements
 
@@ -48,7 +45,7 @@ $   cd ..
 ```
 
 ### Authors 
-Moamen Ibrahim 
-Sercan Türkmen 
-Mina Maged 
-Matti Eteläperä
+* Moamen Ibrahim
+* Sercan Türkmen 
+* Mina Maged 
+* Matti Eteläperä
