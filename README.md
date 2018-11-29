@@ -9,10 +9,10 @@ This project concerns a rough exploration of the Finnish Suomi24 dataset in orde
 
 ## Requirements
 
-virtualenv 
-python3 
-java
-download stanford named entity taggger and unzip it in stanford folder: https://nlp.stanford.edu/software/stanford-ner-2018-10-16.zip
+* virtualenv 
+* python3 
+* java
+* download stanford named entity taggger and unzip it in stanford folder: https://nlp.stanford.edu/software/stanford-ner-2018-10-16.zip
 
 ## Getting Started
 
