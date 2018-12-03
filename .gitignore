@@ -1,5 +1,9 @@
+__pycache__
 .vscode 
 venv 
 test_files
 afinn
 stanford
+
+# dump files for Sumoi24
+textdumps

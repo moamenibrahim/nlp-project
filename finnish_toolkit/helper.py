@@ -1,0 +1,3 @@
+righttopics = ["Terveys"]
+
+#rightSubtopics=["Syöpä",""]
