@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from helper import righttopics
-from firebase_key import pyrebase_config
+from finnish_toolkit import helper,firebase_key
+from finnish_toolkit import finnish_keywords as keywords
 from os import listdir,remove
-import sys
-#import operator
 from pprint import pprint
 import string
 import nltk
-import finnish_keywords as keywords
 import re
 import datetime
 import pyrebase
@@ -16,16 +13,16 @@ import pyrebase
 wordcount = {}
 
 #Load keywords and stopwords, and define characters to be removed
-stopwords_file = open("./finnish_stopwords.txt","r")
+stopwords_file = open("./finnish_toolkit/finnish_stopwords.txt","r")
 lines = stopwords_file.read().split(",")
 stopwords = lines[0].split("\n")
 stopwords_file.close()
 
-#location of json folder to read data from
-files = listdir("./../textdumps")
+# punctuation loading
 punc = set(string.punctuation)
 
-firebase = pyrebase.initialize_app(pyrebase_config)
+# firebase initialization
+firebase = pyrebase.initialize_app(firebase_key.pyrebase_config)
 db = firebase.database()
 kw=db.child("keywords").get()
 

@@ -1,4 +1,4 @@
-from finnish_toolkit import co_occurence
+from finnish_toolkit import co_occurence, helper
 from os import listdir,remove
 import ijson
 
@@ -21,7 +21,7 @@ for fileN in files:
             items = ijson.items(f,"item")
             for o in items:
                 if o["deleted"] is True:
-                    #checkTopic(o["topics"],righttopics) or #extra check above
+                    #checkTopic(o["topics"],helper.righttopics) or #extra check above
                     #print(o["topics"],o["deleted"])
                     continue
                 topics=co_occurence.extractTopics(o["topics"])
