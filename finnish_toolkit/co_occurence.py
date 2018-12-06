@@ -124,41 +124,6 @@ def addNewValues(dbobj,newobj):
     #addStuff(dbobj["keyWords"],newobj["keyWords"])
     return dbobj
 
-
-#writing out to log-file the current contents of wordcount
-def writeToFile(data):
-    try:
-        remove("logs.txt")
-    except OSError:
-        pass
-    #print(wordcount)
-    #sorted_wc = sorted(wordcount.items(),key=operator.itemgetter(1),reverse=True)
-    #pprint(wordcount)
-
-    with open("logs.txt","a") as f:
-        f.write("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
-        f.write("Most common wordpairs in text: \n\n")
-        #r= 250 if len(sorted_wc) > 250 else len(sorted_wc)
-        #for i in range(0, r):,keyword
-        i = 0
-        for key,val in sorted(wordcount.items(), key=lambda i:sum([i[1]['1-2'],i[1]['3-5'],i[1]['6-8'],i[1]['8-14'],i[1]['15+']]),reverse=True):
-            #print(key,val)
-            f.write("%s,%s,\n\t\t'total': %i,\n\t\t'1-2': %i, \n\t\t'3-5': %i, \n\t\t'6-8': %i,\n\t\t'8-14': %i,\n\t\t'15+': %i\n\t\t" %
-            (key[0],key[1],sum([val['1-2'],val['3-5'],val['6-8'],val['8-14'],val['15+']]),
-            val['1-2'],val['3-5'],val['6-8'],val['8-14'],val['15+']))
-            f.write("keywords: \n")
-            for k in val["keyWords"]:
-                f.write("\t\t\t%s: %i\n"%(k,val["keyWords"][k]))
-            f.write("Topics: \n")
-            for v in val:
-                if v not in ['1-2','3-5','6-8','8-14','15+','keyWords']:
-                     f.write("\t\t\t%s : %i\n"% (v,val[v]))
-            f.write("\n")
-            if (i>300):
-                break
-            i+=1
-        f.close()
-
 #Check if the thread is in the correct topics
 def checkTopic(topics,righttopics):
     for topic in topics:
