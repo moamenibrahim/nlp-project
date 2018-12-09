@@ -11,3 +11,4 @@ textdumps
 # post processing files
 post_process
 **/*.pyc
+models_fi_tdt
