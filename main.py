@@ -1,6 +1,8 @@
 from finnish_toolkit import co_occurence, helper, named_entities, part_of_speech, sentiment
+from english_toolkit import lda_topic, stanford_ner, translator
+
 from os import listdir,remove
-import ijson
+import ijson,json
 import operator
 import plotly.plotly as py
 import plotly.graph_objs as go
@@ -39,13 +41,15 @@ def analyizeFiles(): ### def analyizeFiles(filesLocation):
 
                     body = o["body"]
                     body = co_occurence.checkSentence(body)
-                    timestamp = co_occurence.getDateString(o["created_at"]) #### TODO: TIMESTAMP ANALYSIS
+                    noStopWords = co_occurence.removeStopWords(body)
 
+                    timestamp = co_occurence.getDateString(o["created_at"]) #### TODO: TIMESTAMP ANALYSIS
                     anonnick = co_occurence.getValueIntoList(o["anonnick"])
 
-                    for sentence in body:
+                    for sentence in noStopWords:
                         named_entity=named_entities.polyglotNER(sentence)
-                        addToDict(named_entity,named_entities_data)
+                        if(named_entity):
+                            addToDictNER(named_entity,named_entities_data)
 
                     for c in o["comments"]:
                         if c["deleted"] is True:
@@ -55,11 +59,15 @@ def analyizeFiles(): ### def analyizeFiles(filesLocation):
 
                         sent = c["body"]
                         sent = co_occurence.checkSentence(sent)
+                        noStopWords = co_occurence.removeStopWords(sent)
+
                         timestamp = co_occurence.getDateString(c["created_at"]) #### TODO: TIMESTAMP ANALYSIS
                         anonnick = co_occurence.getValueIntoList(c["anonnick"])
-                        for s in sent:
-                            named_entity=named_entities.polyglotNER(s)
-                            addToDict(named_entity,named_entities_data)
+
+                        for sentence in noStopWords:
+                            named_entity=named_entities.polyglotNER(sentence)
+                            if(named_entity):
+                                addToDictNER(named_entity,named_entities_data)
 
             except ValueError:
                 print("ValueError")
@@ -68,29 +76,38 @@ def analyizeFiles(): ### def analyizeFiles(filesLocation):
                 print("IncompleteJSONError")
                 continue
 
-        writeToFile(data=named_entities,filename='named_entities.json')
-
-    #pprint(data)
+    writeToFile(data=named_entities_data,filename='named_entities.json')
     print("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
     return
 
 
-def addToDict(element, dictionary):
-    if (element != ''):
-        if (element in dictionary):
-            ## increment that element
-            dictionary[element] += 1
+def addToDict(elements, dictionary):
+    if (elements != ''):
+        if (elements in dictionary):
+            ## increment that elements
+            dictionary[elements] += 1
         else:
-            ## add element to list
-            dictionary[element] = 1 
+            ## add elements to list
+            dictionary[elements] = 1 
+    return
+
+
+### special function for named entities specifically polyglot
+def addToDictNER(elements, dictionary):
+    item=elements.__str__()
+    if (item != ''):
+        if (item in dictionary):
+            ## increment that item
+            dictionary[item] += 1
+        else:
+            ## add item to list
+            dictionary[item] = 1 
     return
 
 #writing out to log-file the current contents of wordcount
 def writeToFile(data,filename):
     with open("post_process/"+filename,"a") as f:
-        f.write("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
-        f.write(data)
-        f.close()
+        json.dump(data,fp=f)
     return
 
 
@@ -206,3 +223,7 @@ def diseasesFrequency(parameter_list):
 '''
 def topDiseases(parameter_list):
     pass
+
+
+
+analyizeFiles()

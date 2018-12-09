@@ -9,22 +9,6 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
-def train_lda():
-	with open('newsgroups', 'rb') as f:
-		newsgroup_data = pickle.load(f)
-
-	vect = CountVectorizer(min_df=20, max_df=0.2, stop_words='english',
-		token_pattern='(?u)\\b\\w\\w\\w+\\b')
-	
-	X = vect.fit_transform(newsgroup_data)
-	corpus = gensim.matutils.Sparse2Corpus(X, documents_columns=False)
-	id_map = dict((v, k) for k, v in vect.vocabulary_.items())
-	ldamodel = gensim.models.ldamodel.LdaModel(
-		corpus, num_topics=10, iterations=100, id2word=id_map, passes=25, random_state=34)
-	output = ldamodel.print_topics(10)
-	# print (output)
-	return
-
 def preprocess_sentences(doc_complete):
 	stop = set(stopwords.words('english'))
 	exclude = set(string.punctuation)
