@@ -1,6 +1,6 @@
 __pycache__
-.vscode 
-venv 
+.vscode
+venv
 test_files
 afinn
 stanford
@@ -8,5 +8,6 @@ stanford
 # dump files for Sumoi24
 textdumps
 
-# post processing files 
+# post processing files
 post_process
+**/*.pyc
