@@ -1,5 +1,9 @@
 from googletrans import Translator
 
 def translate(input_str,lang='fi'):
-    translator = Translator()
-    return translator.translate(input_str, dest='en', src=lang)
+    try:
+        translator = Translator()
+        translated = translator.translate(input_str, dest='en', src=lang)
+        return translated.text
+    except AttributeError:
+        return input_str

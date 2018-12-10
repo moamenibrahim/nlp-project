@@ -21,6 +21,7 @@ data = {"threads" : 0,
 
 #### Dictionaries initializations 
 named_entities_data={}  # Task 1 
+named_entities_stanford={}  # Task 1
 overall_sentiment_data={}   # Task 6 
 paser_positive_data={}  # Task 7
 paser_negative_data={}  # Task 8
@@ -57,9 +58,12 @@ def analyzeFiles():
                     anonnick = co_occurence.getValueIntoList(o["anonnick"])
 
                     for sentence in noStopWords:
-                        named_entity=named_entities.polyglotNER(sentence)
-                        if(named_entity):
-                            addToDictNER(named_entity,named_entities_data)
+                        # named_entity=named_entities.polyglotNER(sentence)
+                        # if(named_entity):
+                        #     addToDictNER(named_entity,named_entities_data)
+                        stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
+                        if(stanford_named):
+                            addToDictNER(stanford_named,named_entities_stanford)
 
                     for c in o["comments"]:
                         if c["deleted"] is True:
@@ -76,9 +80,12 @@ def analyzeFiles():
                         anonnick = co_occurence.getValueIntoList(c["anonnick"])
 
                         for sentence in noStopWords:
-                            named_entity=named_entities.polyglotNER(sentence)
-                            if(named_entity):
-                                addToDictNER(named_entity,named_entities_data)
+                            # named_entity=named_entities.polyglotNER(translator.translate(sentence))
+                            # if(named_entity):
+                            #     addToDictNER(named_entity,named_entities_data)
+                            stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
+                            if(stanford_named):
+                                addToDictNER(stanford_named,named_entities_stanford)
 
             except ValueError:
                 print("ValueError")
@@ -90,8 +97,9 @@ def analyzeFiles():
                 print("IncompleteJSONError")
                 continue
 
-    writeToFileTxt(data=sentencesList,filename='sentences.txt')
-    writeToFile(data=named_entities_data,filename='named_entities.json')
+    # writeToFileTxt(data=sentencesList,filename='sentences.txt')
+    # writeToFile(data=named_entities_data,filename='named_entities.json')
+    writeToFile(data=named_entities_stanford,filename='stanford_named_entities.json')
     print("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
     return
 
@@ -290,8 +298,10 @@ def overallSentiment(text):
     '''
     evaluate overall sentiment using afinn
     '''
-    sentiment.afinnSent(text)
-    pass
+    return sentiment.afinnCorpus(text)
+
+def overallTopic(text):
+    return lda_topic.generate_topic(text)    
 
 '''
 7. Parser tree on positive sentiment
@@ -329,8 +339,15 @@ def diseasesFrequency(parameter_list):
 def topDiseases(parameter_list):
     pass
 
+sentencesFile = open("post_process/sentences.txt","r")
+sentencespre = sentencesFile.read()
+sentences = sentencespre.replace('\n','\n ').split('\n')
+sentencesFile.close()
 
+# sent = overallSentiment(sentencespre)
+# overall_sent = [overallSentiment(sentence) for sentence in sentences]
 # sentences=fetchSentences()
 # histogramNER()
 # commoncooccurred = mostCooccuring()
-analyzeFiles()
+# print(overallTopic(sentencespre))
+# analyzeFiles()

@@ -34,4 +34,4 @@ def generate_topic(input):
 	for i in result:
 		if i not in mylist:
 			mylist.append(i)
-	return mylist
+	return s

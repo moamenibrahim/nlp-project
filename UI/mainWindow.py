@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from UI.qrangeslider import QRangeSlider
+import main
 
 class mainWindow(QDialog):
     """This class will hold buttons and checkboxes
@@ -78,6 +79,7 @@ class mainWindow(QDialog):
     def executeTNE(self, rangeMin, rangeMax):
         ## TODO
         print("TNE activated")
+        # main.freqNER()
         return
 
 
