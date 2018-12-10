@@ -150,7 +150,7 @@ def addSentence(w,topics,comment,time,nicknames):
         for j in range(i+1,len(wordlist)):
             #print("test1")
             #print(wordlist[i],wordlist[j])
-            if wordlist[i] == "<poistettu>" or wordlist[j] == "<poistettu>":
+            if wordlist[i] == " " or wordlist[j] == " ":
                 continue
             if len(wordlist[i]) > 2 and len(wordlist[j]) > 2 and wordlist[i]!=wordlist[j] and wordlist[i] != " " and wordlist[j] != " ":
                 #print("test2")
@@ -166,17 +166,30 @@ def checkSentence(string):
     ret = []
     sents = nltk.sent_tokenize(string)
     for s in sents:
+        s=''.join(x for x in s if x.isprintable())
         tmp = ""
         if "http" in s or "json" in s:
             #print("http")
             continue
         tokens = nltk.word_tokenize(s)
         for w in tokens:
-            w=checkWord(w)
+            # w=checkWord(w)
             w=w.lower()
-            if w in stopwords:
+            if (w =="<" or w ==">" or w =="p" or w=="/p"):
                 #print(w)
-                tmp+="<poistettu>"+" "
+                continue
+            tmp+=w+" "
+        ret.append(tmp)
+    return ret
+
+
+def removeStopWords(string):
+    ret = []
+    for s in string:
+        tmp = ""
+        tokens = nltk.word_tokenize(s)
+        for w in tokens:
+            if w in stopwords:
                 continue
             tmp+=w+" "
         ret.append(tmp)
