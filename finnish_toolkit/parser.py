@@ -55,11 +55,21 @@ def _read_conll(conll_text):
     comments = []
     for line in lines:
         line = line.strip()
-        if line.startswith(u"#"):
+        if not line:
+            if sent:
+                yield sent, comments
+                sent = []
+                comments = []
+        elif line.startswith(u"#"):
+            if sent:
+                raise ValueError("Missing newline after sentence")
             comments.append(line)
+            continue
         else:
             sent.append(line.split(u"\t"))
-    return sent, comments
+    else:
+        if sent:
+            yield sent, comments
 
 
 def _sort_feat(f):
