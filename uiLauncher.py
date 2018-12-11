@@ -6,13 +6,13 @@ import numpy as np
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from UI.mainContainer import *
+import UI.mainContainer
 
 
 def run():
     cwd = os.getcwd()
     app = QApplication(sys.argv)
-    mainWindow = mainContainer()
+    mainWindow = UI.mainContainer.mainContainer()
     # sys.exit(app.exec_())
     app.exec_()
     return

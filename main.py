@@ -26,6 +26,13 @@ overall_sentiment_data={}   # Task 6
 paser_positive_data={}  # Task 7
 paser_negative_data={}  # Task 8
 
+
+sentencesFile = open("post_process/sentences.txt","r")
+sentencespre = sentencesFile.read()
+sentences = sentencespre.replace('\n','\n ').split('\n')
+sentencesFile.close()
+translated_sent=[translator.translate(sent) for sent in sentences]
+
 def analyzeFiles():
     '''
     Analyze files and dump outputs to post process to improve processing times
@@ -208,7 +215,7 @@ def histogramNER():
         mydata=json.load(fp=f)
         common=freqNER(mydata)
         visualize(common, x_title='named entities', y_title='frequency', plotly_filename='named-entities')
-    return
+        return common
 
 '''
 3. Categories for NER
@@ -294,15 +301,20 @@ def removeStopFromList(most_common,stopwords,no_stop):
 '''
 6. Overall sentiment analysis 
 '''
-def overallSentiment(text):
+def overallSentiment(text=sentences):
     '''
     evaluate overall sentiment using afinn
     '''
     return sentiment.afinnCorpus(text)
 
+def getSent():
+    return [overallSentiment(sentence) for sentence in sentences]
+
 def overallTopic(text):
     return lda_topic.generate_topic(text)    
 
+def getTopic():
+    return overallTopic(". ".join(sent) for sent in sentences)
 '''
 7. Parser tree on positive sentiment
 '''
@@ -339,15 +351,11 @@ def diseasesFrequency(parameter_list):
 def topDiseases(parameter_list):
     pass
 
-sentencesFile = open("post_process/sentences.txt","r")
-sentencespre = sentencesFile.read()
-sentences = sentencespre.replace('\n','\n ').split('\n')
-sentencesFile.close()
 
 # sent = overallSentiment(sentencespre)
 # overall_sent = [overallSentiment(sentence) for sentence in sentences]
 # sentences=fetchSentences()
 # histogramNER()
 # commoncooccurred = mostCooccuring()
-# print(overallTopic(sentencespre))
+# print(overallTopic(". ".join(sent) for sent in sentences))
 # analyzeFiles()
