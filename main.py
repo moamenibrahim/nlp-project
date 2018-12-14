@@ -204,6 +204,7 @@ def freqNER(named_entities_data):
                         key=operator.itemgetter(1), reverse=True)
     return named_entities_data[0:30]
 
+
 '''
 2. Histogram for NER
 '''
@@ -217,6 +218,7 @@ def histogramNER():
         visualize(common, x_title='named entities', y_title='frequency', plotly_filename='named-entities')
         return common
 
+
 '''
 3. Categories for NER
 '''
@@ -225,6 +227,7 @@ def categoriesNER(parameter_list):
     building categories from ner list
     '''
     pass
+
 
 '''
 4. Parser tree on 30 most frequent NER
@@ -256,6 +259,7 @@ def parserTree(named_entities_data):
         mydata=json.load(fp=f)
         common=freqNER(mydata)
     return common
+
 
 '''
 5. Most co-occuring pairs 
@@ -298,6 +302,7 @@ def removeStopFromList(most_common,stopwords,no_stop):
     print("no stopwords list done")
     return no_stop 
 
+
 '''
 6. Overall sentiment analysis 
 '''
@@ -315,17 +320,55 @@ def overallTopic(text):
 
 def getTopic():
     return overallTopic(". ".join(sent) for sent in sentences)
+
+
 '''
 7. Parser tree on positive sentiment
 '''
-def parserPositive(parameter_list):
-    pass
+def parserPositiveAdj(sentences):
+    adjectivesFile = open("post_process/positive_adjectives.txt","r")
+    adjectives = adjectivesFile.read().split('\n')
+    adjectivesFile.close()
+    listOfAdjectives=[]
+    for sentence in sentences:
+        if any(adjectives in sentence):
+            listOfAdjectives.append(sentence)
+    return listOfAdjectives
+
+def parserPositiveVerb(sentences):
+    verbsFile = open("post_process/positive_verbs.txt","r")
+    verbs = verbsFile.read().split('\n')
+    verbsFile.close()
+    listOfVerbs=[]
+    for sentence in sentences:
+        if any(verbs in sentence):
+            listOfVerbs.append(sentence)
+    return listOfVerbs
+
 
 '''
 8. Parser tree on negative sentiment 
 '''
-def parserNegative(parameter_list):
-    pass
+def parserNegativeAdj(sentences):
+    adjectivesFile = open("post_process/negative_adjectives.txt","r")
+    adjectives = adjectivesFile.read().split('\n')
+    adjectivesFile.close()
+    listOfAdjectives=[]
+    for sentence in sentences:
+        if any(adjectives in sentence):
+            listOfAdjectives.append(sentence)
+    return listOfAdjectives
+
+def parserNegativeVerb(sentences):
+    verbsFile = open("post_process/negative_verbs.txt","r")
+    verbs = verbsFile.read().split('\n')
+    verbsFile.close()
+    listOfVerbs=[]
+    for sentence in sentences:
+        if any(verbs in sentence):
+            listOfVerbs.append(sentence)
+    return listOfVerbs
+
 
 '''
 9. LDA and sentiment variation per year
@@ -333,17 +376,20 @@ def parserNegative(parameter_list):
 def yearVariation(parameter_list):
     pass
 
+
 '''
 10. Identify diseases
 '''
 def identifyDiseases(parameter_list):
     pass
 
+
 '''
 11. frequency of diseases per month 
 '''
 def diseasesFrequency(parameter_list):
     pass
+
 
 '''
 12. Top 5 diseases analysis 
