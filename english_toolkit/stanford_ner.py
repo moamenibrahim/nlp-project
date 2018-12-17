@@ -5,5 +5,10 @@ jarfile = stanford_dir + 'stanford-ner.jar'
 modelfile = stanford_dir + 'classifiers/english.muc.7class.distsim.crf.ser.gz'
 st = StanfordNERTagger(model_filename=modelfile, path_to_jar=jarfile)
         
-def getNamedEntites(self, text):
-    return st.tag(text.split())
+def getNamedEntites(text):
+    mylist=[]
+    tags= st.tag(text.split())
+    for items in tags:
+        if (items[1]!='O'):
+            mylist.append(items)
+    return mylist

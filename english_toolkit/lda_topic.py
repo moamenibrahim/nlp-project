@@ -26,8 +26,8 @@ def generate_topic(input):
 	dictionary = corpora.Dictionary(texts)
 	doc_term_matrix = [dictionary.doc2bow(text) for text in texts]
 	Lda = gensim.models.ldamodel.LdaModel
-	ldamodel = Lda(doc_term_matrix, num_topics=2, id2word = dictionary, passes=300)
-	str = ldamodel.print_topics(num_topics=2, num_words=3)
+	ldamodel = Lda(doc_term_matrix, num_topics=20, id2word = dictionary, passes=400)
+	str = ldamodel.print_topics(num_topics=20, num_words=20)
 	s = tuple(str)
 	t = "\n".join(item[1] for item in s)
 	result = re.findall('[a-zA-Z]+',t)

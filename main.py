@@ -1,7 +1,6 @@
 from finnish_toolkit import co_occurence, helper, named_entities, part_of_speech, sentiment, firebase_key
 from english_toolkit import lda_topic, stanford_ner, translator
 from nltk.corpus import stopwords as englishStopwords
-
 from os import listdir,remove
 import ijson,json
 import operator
@@ -9,8 +8,6 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 import numpy as np
 import pyrebase
-import threading
-
 
 files = listdir("./textdumps")  # Folder for dataset
 righttopics = ["Paikkakunnat","Terveys"]    # topics to be matched 
@@ -21,16 +18,34 @@ data = {"threads" : 0,
 
 #### Dictionaries initializations 
 named_entities_data={}  # Task 1 
+named_entities_stanford={}  # Task 1
 overall_sentiment_data={}   # Task 6 
 paser_positive_data={}  # Task 7
 paser_negative_data={}  # Task 8
+
+
+sentencesFile = open("post_process/sentences.txt","r")
+sentencespre = sentencesFile.read()
+sentences = sentencespre.replace('\n','\n ').split('\n')
+sentencesFile.close()
+
+def translationFunc(sentences):
+    ### REMOVE STOPWORDS then translate
+    ### Transalation fails on 15k+ characters 
+    translated_sent=[]
+    for sent in sentences:
+        translated=translator.translate(sent)
+        if translated:
+            translated_sent.append(translated)
+    return translated_sent
 
 def analyzeFiles():
     '''
     Analyze files and dump outputs to post process to improve processing times
     '''
 
-    sentencesList=[]    # All sentences of the discussions: expected output is big and will be matched by 30 most frequent ner
+    # All sentences of the discussions: expected output is big and will be matched by 30 most frequent ner
+    sentencesList=[]    
     for fileN in files:
         if fileN.endswith(".json"):
             filename="./textdumps/{}".format(fileN)
@@ -49,17 +64,24 @@ def analyzeFiles():
                     data["threads"]+=1
 
                     body = o["body"]
-                    body = co_occurence.checkSentence(body) # check sentences and remove unidentified chars
-                    sentencesList.extend(body)  
-                    noStopWords = co_occurence.removeStopWords(body)    # remove stopwords while keeping sentencesList with stopwords for parsers
 
-                    timestamp = co_occurence.getDateString(o["created_at"]) #### TODO: TIMESTAMP ANALYSIS
+                    ### check sentences and remove unidentified chars
+                    body = co_occurence.checkSentence(body) 
+                    sentencesList.extend(body) 
+                    ### remove stopwords while keeping sentencesList with stopwords for parsers 
+                    noStopWords = co_occurence.removeStopWords(body)    
+
+                    timestamp = co_occurence.getDateString(o["created_at"]) 
                     anonnick = co_occurence.getValueIntoList(o["anonnick"])
+                    writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                     for sentence in noStopWords:
                         named_entity=named_entities.polyglotNER(sentence)
                         if(named_entity):
                             addToDictNER(named_entity,named_entities_data)
+                        stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
+                        if(stanford_named):
+                            addToDictNER(stanford_named,named_entities_stanford)
 
                     for c in o["comments"]:
                         if c["deleted"] is True:
@@ -72,13 +94,17 @@ def analyzeFiles():
                         sentencesList.extend(body)
                         noStopWords = co_occurence.removeStopWords(body)
 
-                        timestamp = co_occurence.getDateString(c["created_at"]) #### TODO: TIMESTAMP ANALYSIS
+                        timestamp = co_occurence.getDateString(c["created_at"]) 
                         anonnick = co_occurence.getValueIntoList(c["anonnick"])
+                        writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                         for sentence in noStopWords:
-                            named_entity=named_entities.polyglotNER(sentence)
+                            named_entity=named_entities.polyglotNER(translator.translate(sentence))
                             if(named_entity):
                                 addToDictNER(named_entity,named_entities_data)
+                            stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
+                            if(stanford_named):
+                                addToDictNER(stanford_named,named_entities_stanford)
 
             except ValueError:
                 print("ValueError")
@@ -92,10 +118,11 @@ def analyzeFiles():
 
     writeToFileTxt(data=sentencesList,filename='sentences.txt')
     writeToFile(data=named_entities_data,filename='named_entities.json')
+    writeToFile(data=named_entities_stanford,filename='stanford_named_entities.json')
     print("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
     return
 
-
+# add element to dictionary
 def addToDict(elements, dictionary):
     '''
     helper function to add elements to dictionaries and keep track of repetitions 
@@ -109,7 +136,7 @@ def addToDict(elements, dictionary):
             dictionary[elements] = 1 
     return
 
-
+# add element to dictionary for named entities
 def addToDictNER(elements, dictionary):
     '''
     helper special function for named entities specifically polyglot
@@ -124,24 +151,26 @@ def addToDictNER(elements, dictionary):
             dictionary[item] = 1 
     return
 
-#writing out to log-file the current contents of wordcount
-def writeToFile(data,filename):
+# writing out to log-file the current contents of wordcount
+def writeToFile(data,filename,parameter="w+"):
     '''
     write outputs to json files: for dictionaries 
     '''
-    with open("post_process/"+filename,"w+") as f:
+    with open("post_process/"+filename,parameter) as f:
         json.dump(data,fp=f)
     return
 
-def writeToFileTxt(data,filename):
+# writing out to log-file the current contents of wordcount
+def writeToFileTxt(data,filename,parameter="w+"):
     '''
     write outputs to text files: for strings 
     '''
-    with open("post_process/"+filename,"a") as f:
+    with open("post_process/"+filename,parameter) as f:
         for items in data:
             f.write(items+'\n')
     return
 
+# visualizing results
 def visualize(data_to_visualize, x_title, y_title, plotly_filename):
     '''
     Visualize Results to plolty
@@ -189,6 +218,7 @@ def freqNER(named_entities_data):
                         key=operator.itemgetter(1), reverse=True)
     return named_entities_data[0:30]
 
+
 '''
 2. Histogram for NER
 '''
@@ -200,7 +230,8 @@ def histogramNER():
         mydata=json.load(fp=f)
         common=freqNER(mydata)
         visualize(common, x_title='named entities', y_title='frequency', plotly_filename='named-entities')
-    return
+        return common
+
 
 '''
 3. Categories for NER
@@ -210,6 +241,7 @@ def categoriesNER(parameter_list):
     building categories from ner list
     '''
     pass
+
 
 '''
 4. Parser tree on 30 most frequent NER
@@ -241,6 +273,7 @@ def parserTree(named_entities_data):
         mydata=json.load(fp=f)
         common=freqNER(mydata)
     return common
+
 
 '''
 5. Most co-occuring pairs 
@@ -283,27 +316,73 @@ def removeStopFromList(most_common,stopwords,no_stop):
     print("no stopwords list done")
     return no_stop 
 
+
 '''
 6. Overall sentiment analysis 
 '''
-def overallSentiment(text):
+def overallSentiment(text=sentences):
     '''
     evaluate overall sentiment using afinn
     '''
-    sentiment.afinnSent(text)
-    pass
+    return sentiment.afinnCorpus(text)
+
+def getSent():
+    return [overallSentiment(sentence) for sentence in sentences]
+
+def overallTopic(text):
+    return lda_topic.generate_topic(text)    
+
+def getTopic():
+    return overallTopic(". ".join(sent) for sent in sentences)
+
 
 '''
 7. Parser tree on positive sentiment
 '''
-def parserPositive(parameter_list):
-    pass
+def parserPositiveAdj(sentences):
+    adjectivesFile = open("post_process/positive_adjectives.txt","r")
+    adjectives = adjectivesFile.read().split('\n')
+    adjectivesFile.close()
+    listOfAdjectives=[]
+    for sentence in sentences:
+        if any(adjectives in sentence):
+            listOfAdjectives.append(sentence)
+    return listOfAdjectives
+
+def parserPositiveVerb(sentences):
+    verbsFile = open("post_process/positive_verbs.txt","r")
+    verbs = verbsFile.read().split('\n')
+    verbsFile.close()
+    listOfVerbs=[]
+    for sentence in sentences:
+        if any(verbs in sentence):
+            listOfVerbs.append(sentence)
+    return listOfVerbs
+
 
 '''
 8. Parser tree on negative sentiment 
 '''
-def parserNegative(parameter_list):
-    pass
+def parserNegativeAdj(sentences):
+    adjectivesFile = open("post_process/negative_adjectives.txt","r")
+    adjectives = adjectivesFile.read().split('\n')
+    adjectivesFile.close()
+    listOfAdjectives=[]
+    for sentence in sentences:
+        if any(adjectives in sentence):
+            listOfAdjectives.append(sentence)
+    return listOfAdjectives
+
+def parserNegativeVerb(sentences):
+    verbsFile = open("post_process/negative_verbs.txt","r")
+    verbs = verbsFile.read().split('\n')
+    verbsFile.close()
+    listOfVerbs=[]
+    for sentence in sentences:
+        if any(verbs in sentence):
+            listOfVerbs.append(sentence)
+    return listOfVerbs
+
 
 '''
 9. LDA and sentiment variation per year
@@ -311,17 +390,20 @@ def parserNegative(parameter_list):
 def yearVariation(parameter_list):
     pass
 
+
 '''
 10. Identify diseases
 '''
 def identifyDiseases(parameter_list):
     pass
 
+
 '''
 11. frequency of diseases per month 
 '''
 def diseasesFrequency(parameter_list):
     pass
+
 
 '''
 12. Top 5 diseases analysis 
@@ -330,7 +412,10 @@ def topDiseases(parameter_list):
     pass
 
 
+# sent = overallSentiment(sentencespre)
+# overall_sent = [overallSentiment(sentence) for sentence in sentences]
 # sentences=fetchSentences()
 # histogramNER()
 # commoncooccurred = mostCooccuring()
-analyzeFiles()
+# print(overallTopic(". ".join(sent) for sent in sentences))
+# analyzeFiles()
