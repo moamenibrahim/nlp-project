@@ -1,7 +1,6 @@
 from finnish_toolkit import co_occurence, helper, named_entities, part_of_speech, sentiment, firebase_key
 from english_toolkit import lda_topic, stanford_ner, translator
 from nltk.corpus import stopwords as englishStopwords
-
 from os import listdir,remove
 import ijson,json
 import operator
@@ -9,8 +8,6 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 import numpy as np
 import pyrebase
-import threading
-
 
 files = listdir("./textdumps")  # Folder for dataset
 righttopics = ["Paikkakunnat","Terveys"]    # topics to be matched 
@@ -31,14 +28,24 @@ sentencesFile = open("post_process/sentences.txt","r")
 sentencespre = sentencesFile.read()
 sentences = sentencespre.replace('\n','\n ').split('\n')
 sentencesFile.close()
-translated_sent=[translator.translate(sent) for sent in sentences]
+
+def translationFunc(sentences):
+    ### REMOVE STOPWORDS then translate
+    ### Transalation fails on 15k+ characters 
+    translated_sent=[]
+    for sent in sentences:
+        translated=translator.translate(sent)
+        if translated:
+            translated_sent.append(translated)
+    return translated_sent
 
 def analyzeFiles():
     '''
     Analyze files and dump outputs to post process to improve processing times
     '''
 
-    sentencesList=[]    # All sentences of the discussions: expected output is big and will be matched by 30 most frequent ner
+    # All sentences of the discussions: expected output is big and will be matched by 30 most frequent ner
+    sentencesList=[]    
     for fileN in files:
         if fileN.endswith(".json"):
             filename="./textdumps/{}".format(fileN)
@@ -57,17 +64,21 @@ def analyzeFiles():
                     data["threads"]+=1
 
                     body = o["body"]
-                    body = co_occurence.checkSentence(body) # check sentences and remove unidentified chars
-                    sentencesList.extend(body)  
-                    noStopWords = co_occurence.removeStopWords(body)    # remove stopwords while keeping sentencesList with stopwords for parsers
 
-                    timestamp = co_occurence.getDateString(o["created_at"]) #### TODO: TIMESTAMP ANALYSIS
+                    ### check sentences and remove unidentified chars
+                    body = co_occurence.checkSentence(body) 
+                    sentencesList.extend(body) 
+                    ### remove stopwords while keeping sentencesList with stopwords for parsers 
+                    noStopWords = co_occurence.removeStopWords(body)    
+
+                    timestamp = co_occurence.getDateString(o["created_at"]) 
                     anonnick = co_occurence.getValueIntoList(o["anonnick"])
+                    writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                     for sentence in noStopWords:
-                        # named_entity=named_entities.polyglotNER(sentence)
-                        # if(named_entity):
-                        #     addToDictNER(named_entity,named_entities_data)
+                        named_entity=named_entities.polyglotNER(sentence)
+                        if(named_entity):
+                            addToDictNER(named_entity,named_entities_data)
                         stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
                         if(stanford_named):
                             addToDictNER(stanford_named,named_entities_stanford)
@@ -83,13 +94,14 @@ def analyzeFiles():
                         sentencesList.extend(body)
                         noStopWords = co_occurence.removeStopWords(body)
 
-                        timestamp = co_occurence.getDateString(c["created_at"]) #### TODO: TIMESTAMP ANALYSIS
+                        timestamp = co_occurence.getDateString(c["created_at"]) 
                         anonnick = co_occurence.getValueIntoList(c["anonnick"])
+                        writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                         for sentence in noStopWords:
-                            # named_entity=named_entities.polyglotNER(translator.translate(sentence))
-                            # if(named_entity):
-                            #     addToDictNER(named_entity,named_entities_data)
+                            named_entity=named_entities.polyglotNER(translator.translate(sentence))
+                            if(named_entity):
+                                addToDictNER(named_entity,named_entities_data)
                             stanford_named=stanford_ner.getNamedEntites(translator.translate(sentence))
                             if(stanford_named):
                                 addToDictNER(stanford_named,named_entities_stanford)
@@ -104,13 +116,13 @@ def analyzeFiles():
                 print("IncompleteJSONError")
                 continue
 
-    # writeToFileTxt(data=sentencesList,filename='sentences.txt')
-    # writeToFile(data=named_entities_data,filename='named_entities.json')
+    writeToFileTxt(data=sentencesList,filename='sentences.txt')
+    writeToFile(data=named_entities_data,filename='named_entities.json')
     writeToFile(data=named_entities_stanford,filename='stanford_named_entities.json')
     print("Threads: %s,Comments: %s\n" %(data["threads"],data["comments"]))
     return
 
-
+# add element to dictionary
 def addToDict(elements, dictionary):
     '''
     helper function to add elements to dictionaries and keep track of repetitions 
@@ -124,7 +136,7 @@ def addToDict(elements, dictionary):
             dictionary[elements] = 1 
     return
 
-
+# add element to dictionary for named entities
 def addToDictNER(elements, dictionary):
     '''
     helper special function for named entities specifically polyglot
@@ -139,24 +151,26 @@ def addToDictNER(elements, dictionary):
             dictionary[item] = 1 
     return
 
-#writing out to log-file the current contents of wordcount
-def writeToFile(data,filename):
+# writing out to log-file the current contents of wordcount
+def writeToFile(data,filename,parameter="w+"):
     '''
     write outputs to json files: for dictionaries 
     '''
-    with open("post_process/"+filename,"w+") as f:
+    with open("post_process/"+filename,parameter) as f:
         json.dump(data,fp=f)
     return
 
-def writeToFileTxt(data,filename):
+# writing out to log-file the current contents of wordcount
+def writeToFileTxt(data,filename,parameter="w+"):
     '''
     write outputs to text files: for strings 
     '''
-    with open("post_process/"+filename,"a") as f:
+    with open("post_process/"+filename,parameter) as f:
         for items in data:
             f.write(items+'\n')
     return
 
+# visualizing results
 def visualize(data_to_visualize, x_title, y_title, plotly_filename):
     '''
     Visualize Results to plolty
