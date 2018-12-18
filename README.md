@@ -51,7 +51,7 @@ cd ..
 
 ## Authors
 
-* Moamen Ibrahim
+* [Moamen Ibrahim](https://github.com/moamenibrahim)
 * [Sercan Türkmen](https://github.com/sercant/)
 * Mina Maged
 * Matti Eteläperä

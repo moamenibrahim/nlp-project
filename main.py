@@ -6,11 +6,13 @@ import ijson,json
 import operator
 import plotly.plotly as py
 import plotly.graph_objs as go
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import matplotlib.pyplot as plt
 import numpy as np
 import pyrebase
 
 files = listdir("./textdumps")  # Folder for dataset
-righttopics = ["Paikkakunnat","Terveys"]    # topics to be matched 
+righttopics = ["Terveys"]    # topics to be matched 
 
 # Keeping tracck of number of threads and comments fetched
 data = {"threads" : 0,
@@ -29,7 +31,7 @@ sentencespre = sentencesFile.read()
 sentences = sentencespre.replace('\n','\n ').split('\n')
 sentencesFile.close()
 
-def translationFunc(sentences):
+def translationFunc():
     ### REMOVE STOPWORDS then translate
     ### Transalation fails on 15k+ characters 
     translated_sent=[]
@@ -37,7 +39,8 @@ def translationFunc(sentences):
         translated=translator.translate(sent)
         if translated:
             translated_sent.append(translated)
-    return translated_sent
+    writeToFileTxt(data=translated_sent,filename='translated_sentences.txt',parameter='w+')
+    return 
 
 def analyzeFiles():
     '''
@@ -72,7 +75,7 @@ def analyzeFiles():
                     noStopWords = co_occurence.removeStopWords(body)    
 
                     timestamp = co_occurence.getDateString(o["created_at"]) 
-                    anonnick = co_occurence.getValueIntoList(o["anonnick"])
+                    # anonnick = co_occurence.getValueIntoList(o["anonnick"])   # not used
                     writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                     for sentence in noStopWords:
@@ -95,7 +98,7 @@ def analyzeFiles():
                         noStopWords = co_occurence.removeStopWords(body)
 
                         timestamp = co_occurence.getDateString(c["created_at"]) 
-                        anonnick = co_occurence.getValueIntoList(c["anonnick"])
+                        # anonnick = co_occurence.getValueIntoList(c["anonnick"])   # not used 
                         writeToFileTxt(body,filename='time/'+timestamp[0]+'.txt',parameter="a+")
 
                         for sentence in noStopWords:
@@ -171,7 +174,7 @@ def writeToFileTxt(data,filename,parameter="w+"):
     return
 
 # visualizing results
-def visualize(data_to_visualize, x_title, y_title, plotly_filename):
+def visualizePlotly(data_to_visualize, x_title, y_title, plotly_filename):
     '''
     Visualize Results to plolty
     '''
@@ -207,6 +210,22 @@ def visualize(data_to_visualize, x_title, y_title, plotly_filename):
     py.plot(fig, filename=plotly_filename)
     return
 
+def visualize(data_to_visualize, x_title, y_title, graphname):
+    
+    x_axis=[]
+    y_axis=[]
+    for element in data_to_visualize:
+        x_axis.append(element[0])
+        y_axis.append(element[1])
+    y_pos = np.arange(len(y_axis))
+    x_pos = x_axis
+    plt.bar(y_pos, x_pos, align='center', alpha=0.5)
+    plt.xticks(y_pos, y_axis)
+    plt.ylabel(y_title)
+    plt.title(graphname)
+    plt.show()
+
+
 '''
 1. Frequency of Named entities
 '''
@@ -229,7 +248,7 @@ def histogramNER():
     with open("post_process/named_entities.json","r") as f:
         mydata=json.load(fp=f)
         common=freqNER(mydata)
-        visualize(common, x_title='named entities', y_title='frequency', plotly_filename='named-entities')
+        visualize(common, x_title='named entities', y_title='frequency', graphname='named-entities')
         return common
 
 
@@ -419,3 +438,4 @@ def topDiseases(parameter_list):
 # commoncooccurred = mostCooccuring()
 # print(overallTopic(". ".join(sent) for sent in sentences))
 # analyzeFiles()
+translationFunc()
