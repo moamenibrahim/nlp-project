@@ -26,14 +26,7 @@ paser_positive_data={}  # Task 7
 paser_negative_data={}  # Task 8
 
 
-sentencesFile = open("post_process/sentences.txt","r")
-sentencespre = sentencesFile.read()
-sentences = sentencespre.replace('\n','\n ').split('\n')
-sentencesFile.close()
-
 def translationFunc():
-    ### REMOVE STOPWORDS then translate
-    ### Transalation fails on 15k+ characters 
     translated_sent=[]
     for sent in sentences:
         translated=translator.translate(sent)
@@ -41,6 +34,26 @@ def translationFunc():
             translated_sent.append(translated)
     writeToFileTxt(data=translated_sent,filename='translated_sentences.txt',parameter='w+')
     return 
+
+def translateDivided():  
+    for fileN in listdir("./post_process/time"):
+        if fileN.endswith(".txt"):
+            filename="./post_process/time/{}".format(fileN)
+        else:
+            continue
+
+        with open(filename) as f:
+            print(filename)
+            sentencespre = f.read().split('\n')
+            f.close()
+
+        translated_sent=[]
+        for sent in sentencespre:
+            translated=translator.translate(sent)
+            if translated:
+                translated_sent.append(translated)
+        writeToFileTxt(data=translated_sent,filename='post_process/time/translated/'+fileN,parameter='w+')
+    return
 
 def analyzeFiles():
     '''
@@ -168,7 +181,7 @@ def writeToFileTxt(data,filename,parameter="w+"):
     '''
     write outputs to text files: for strings 
     '''
-    with open("post_process/"+filename,parameter) as f:
+    with open(filename,parameter) as f:
         for items in data:
             f.write(items+'\n')
     return
@@ -339,20 +352,18 @@ def removeStopFromList(most_common,stopwords,no_stop):
 '''
 6. Overall sentiment analysis 
 '''
-def overallSentiment(text=sentences):
+def overallSentiment():
     '''
     evaluate overall sentiment using afinn
     '''
     return sentiment.afinnCorpus(text)
 
 def getSent():
+    sentencesFile = open("post_process/sentences.txt","r")
+    sentencespre = sentencesFile.read()
+    sentences = sentencespre.replace('\n','\n ').split('\n')
+    sentencesFile.close()
     return [overallSentiment(sentence) for sentence in sentences]
-
-def overallTopic(text):
-    return lda_topic.generate_topic(text)    
-
-def getTopic():
-    return overallTopic(". ".join(sent) for sent in sentences)
 
 
 '''
@@ -406,9 +417,51 @@ def parserNegativeVerb(sentences):
 '''
 9. LDA and sentiment variation per year
 '''
-def yearVariation(parameter_list):
-    pass
+'''
+Topic detection functions 
+'''
+def overallTopic(text):
+    return lda_topic.generate_topic(text)    
 
+def getTopicVariation():
+
+    topics=[]
+    for fileN in listdir("./post_process/time_lemmatized"):
+        if fileN.endswith(".txt"):
+            filename="./post_process/time_lemmatized/{}".format(fileN)
+        else:
+            continue
+
+        with open(filename) as f:
+            print(filename)
+            sentencespre = f.read()
+            f.close()
+        
+        topic=overallTopic(sentencespre)
+        print(topic)
+        topics.append(topic)
+
+    return topics
+    
+def getSentVariation():
+
+    sentiment=[]
+    for fileN in listdir("./post_process/time"):
+        if fileN.endswith(".txt"):
+            filename="./post_process/time/translated/{}".format(fileN)
+        else:
+            continue
+
+        with open(filename) as f:
+            print(filename)
+            sentencespre = f.read()
+            f.close()
+
+        sentiment_item=overallSentiment(sentencespre)
+        print(sentiment_item)
+        sentiment.append(sentiment_item)
+
+    return sentiment
 
 '''
 10. Identify diseases
@@ -438,4 +491,7 @@ def topDiseases(parameter_list):
 # commoncooccurred = mostCooccuring()
 # print(overallTopic(". ".join(sent) for sent in sentences))
 # analyzeFiles()
-translationFunc()
+# translationFunc()
+getTopicVariation()
+getSentVariation()
+# translateDivided()
