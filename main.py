@@ -26,10 +26,9 @@ paser_positive_data={}  # Task 7
 paser_negative_data={}  # Task 8
 
 
-sentencesFile = open("post_process/sentences.txt","r")
-sentencespre = sentencesFile.read()
-sentences = sentencespre.replace('\n','\n ').split('\n')
-sentencesFile.close()
+with open('./data/sentences_dump.txt', 'r') as sentencesFile:
+    sentences = sentencesFile.readlines()
+    sentences = [x.strip() for x in sentences]
 
 def translationFunc():
     ### REMOVE STOPWORDS then translate
@@ -429,6 +428,46 @@ def diseasesFrequency(parameter_list):
 '''
 def topDiseases(parameter_list):
     pass
+
+
+def extract_sentences_of_most_frequent_named_entities():
+    with open("data/most_frequent_named_entities_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
+    for sentence in sentences:
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
+
+    with open('./data/most_frequent_named_entity_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+
+def parse_most_frequent_named_entity_sentences():
+    with open('./data/most_frequent_named_entity_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+
+    mp = parser.Parser()
+
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        import os
+        dump_folder = './data/visualizations/mfnes'
+        os.makedirs(dump_folder)
+
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
 
 
 # sent = overallSentiment(sentencespre)
