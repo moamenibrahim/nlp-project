@@ -1,3 +1,6 @@
 [submodule "finnish_parser"]
 	path = finnish_parser
 	url = git@github.com:TurkuNLP/Turku-neural-parser-pipeline.git
+[submodule "afinn"]
+	path = afinn
+	url = https://github.com/moamenibrahim/afinn.git
