@@ -32,23 +32,6 @@ pip install -r requirements.txt
 ./init.sh
 ```
 
-### To apply sentiment analysis on Finnish text using sentiment tagged list of words
-
-Clone refined afinn repository to work on Finnish text
-
-```bash
-git clone git@github.com:moamenibrahim/afinn.git
-cd afinn/
-```
-
-Install afinn using activated virtualenv then return to main repo folder
-
-```bash
-python setup.py build
-python setup.py install
-cd ..
-```
-
 ## Authors
 
 * [Moamen Ibrahim](https://github.com/moamenibrahim)
