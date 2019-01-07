@@ -1,6 +1,8 @@
-from afinn import Afinn
+from afinn.afinn import Afinn
 from polyglot.text import Text
 from nltk import sent_tokenize
+from statistics import mean 
+
 
 def afinnSent(text, lang='fi'):
     afinn = Afinn(language=lang)
@@ -9,8 +11,10 @@ def afinnSent(text, lang='fi'):
 def afinnCorpus(text, lang='fi'):
     afinn = Afinn(language=lang)
     sentences = sent_tokenize(text)
-    scored_sentences = ((afinn.score(sent), sent) for sent in sentences)
-    return sorted(scored_sentences)
+#     scored_sentences = ((afinn.score(sent), sent) for sent in sentences)
+    scored_sentences = [afinn.score(sent) for sent in sentences]
+    average_score = mean(scored_sentences)
+    return average_score
 
 def polyglotSent(text, lang='fi'):
     sentence=[]
@@ -19,4 +23,4 @@ def polyglotSent(text, lang='fi'):
     for w in text.words:
         if(w.polarity!=0):
             sentence.append([w, w.polarity])
-    return sentence
+    return w.polarity

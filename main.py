@@ -244,7 +244,7 @@ def visualize(data_to_visualize, x_title, y_title, graphname):
 
 
 '''
-1. Frequency of Named entities
+Task 2 Frequency of Named entities
 '''
 def freqNER(named_entities_data):
     '''
@@ -256,7 +256,7 @@ def freqNER(named_entities_data):
 
 
 '''
-2. Histogram for NER
+Task 2 Histogram for NER
 '''
 def histogramNER():
     '''
@@ -270,49 +270,51 @@ def histogramNER():
 
 
 '''
-3. Categories for NER
+Task 3 Parser tree on 30 most frequent NER
 '''
-def categoriesNER(parameter_list):
-    '''
-    building categories from ner list
-    '''
-    pass
+
+def extract_sentences_of_most_frequent_named_entities():
+    with open("data/five_diseases_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
+    for sentence in sentences:
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
+
+    with open('data/five_diseases_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+def parse_most_frequent_named_entity_sentences():
+    with open('data/five_diseases_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+
+    mp = parser.Parser()
+
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+    
+    import os
+    dump_folder = './data/visualizations/five_diseases'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
 
 
 '''
-4. Parser tree on 30 most frequent NER
-'''
-def fetchSentences():
-    '''
-    fetch sentences that contains any of the most repeated named entities
-    '''
-    sentencesFile = open("post_process/sentences.txt","r")
-    sentences = sentencesFile.read().split(",")
-    sentences = sentences[0].split("\n")
-    sentencesFile.close()
-
-    mysentences = []
-    with open("post_process/named_entities.json","r") as f:
-        mydata=json.load(fp=f)
-        common=freqNER(mydata)
-        for element in common:
-            for sentence in sentences:
-                if element in sentence:
-                    mysentences.append(sentence)
-        return mysentences
-
-def parserTree(named_entities_data):
-    '''
-    lunching Turku parser on most frequent named entites 
-    '''
-    with open("post_process/named_entities.json","r") as f:
-        mydata=json.load(fp=f)
-        common=freqNER(mydata)
-    return common
-
-
-'''
-5. Most co-occuring pairs 
+Task 4 Most co-occuring pairs 
 '''
 firebase = pyrebase.initialize_app(firebase_key.pyrebase_config)
 auth=firebase.auth()
@@ -354,9 +356,9 @@ def removeStopFromList(most_common,stopwords,no_stop):
 
 
 '''
-6. Overall sentiment analysis 
+Task 5 Overall sentiment analysis 
 '''
-def overallSentiment():
+def overallSentiment(text):
     '''
     evaluate overall sentiment using afinn
     '''
@@ -371,58 +373,164 @@ def getSent():
 
 
 '''
-7. Parser tree on positive sentiment
+Task 6 Parser tree on positive sentiment
 '''
-def parserPositiveAdj(sentences):
-    adjectivesFile = open("post_process/positive_adjectives.txt","r")
-    adjectives = adjectivesFile.read().split('\n')
-    adjectivesFile.close()
-    listOfAdjectives=[]
+def parserPositiveAdj():
+    with open("data/postive_adjectives_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
     for sentence in sentences:
-        if any(adjectives in sentence):
-            listOfAdjectives.append(sentence)
-    return listOfAdjectives
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
 
-def parserPositiveVerb(sentences):
-    verbsFile = open("post_process/positive_verbs.txt","r")
-    verbs = verbsFile.read().split('\n')
-    verbsFile.close()
-    listOfVerbs=[]
+    with open('data/postive_adjectives_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+    with open('data/postive_adjectives_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+    mp = parser.Parser()
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+    
+    import os
+    dump_folder = './data/visualizations/postive_adjectives'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
+    
+
+def parserPositiveVerb():
+    with open("data/postive_verbs_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
     for sentence in sentences:
-        if any(verbs in sentence):
-            listOfVerbs.append(sentence)
-    return listOfVerbs
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
 
+    with open('data/postive_verbs_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+    with open('data/postive_verbs_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+    mp = parser.Parser()
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+    
+    import os
+    dump_folder = './data/visualizations/postive_verbs'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
 
 '''
-8. Parser tree on negative sentiment 
+Task 7 Parser tree on negative sentiment 
 '''
-def parserNegativeAdj(sentences):
-    adjectivesFile = open("post_process/negative_adjectives.txt","r")
-    adjectives = adjectivesFile.read().split('\n')
-    adjectivesFile.close()
-    listOfAdjectives=[]
+def parserNegativeAdj():
+    with open("data/negative_adjectives_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
     for sentence in sentences:
-        if any(adjectives in sentence):
-            listOfAdjectives.append(sentence)
-    return listOfAdjectives
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
 
-def parserNegativeVerb(sentences):
-    verbsFile = open("post_process/negative_verbs.txt","r")
-    verbs = verbsFile.read().split('\n')
-    verbsFile.close()
-    listOfVerbs=[]
+    with open('data/negative_adjectives_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+    with open('data/negative_adjectives_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+    mp = parser.Parser()
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+    
+    import os
+    dump_folder = './data/visualizations/negative_adjectives'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
+
+def parserNegativeVerb():
+    with open("data/negative_verbs_dump.txt", "r") as f:
+        words_to_check = f.readlines()
+        words_to_check = [x.strip() for x in words_to_check]
+
+    sentences_containing_words = []
     for sentence in sentences:
-        if any(verbs in sentence):
-            listOfVerbs.append(sentence)
-    return listOfVerbs
+        for word in words_to_check:
+            if sentence.lower().find(word) != -1:
+                sentences_containing_words.append(sentence)
+                break
+
+    with open('data/negative_verbs_sentences_dump.txt', 'w+') as f:
+        f.writelines("%s\n" % line for line in sentences_containing_words)
+
+    with open('data/negative_verbs_sentences_dump.txt', 'r') as f:
+        sentences = f.readlines()
+        sentences = [x.strip() for x in sentences]
+
+    from finnish_toolkit import parser
+    mp = parser.Parser()
+    parsed_sentences = []
+    for i in range(30):
+        sentence = sentences[i]
+        parsed_sentence = mp.parse(sentence)
+        parsed_sentences.append(parsed_sentence)
+    
+    import os
+    dump_folder = './data/visualizations/negative_verbs'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+
+    for i, parsed_sentence in enumerate(parsed_sentences):
+        parser.visualize(
+            parsed_sentence, '{}/{}.html'.format(dump_folder, i))
 
 
 '''
-9. LDA and sentiment variation per year
+Task 8 LDA and sentiment variation per year
 '''
+def getSentVariation():
+
 '''
-Topic detection functions 
+Topic 9 detection functions 
 '''
 def overallTopic(text):
     return lda_topic.generate_topic(text)    
@@ -447,12 +555,11 @@ def getTopicVariation():
 
     return topics
     
-def getSentVariation():
 
     sentiment=[]
     for fileN in listdir("./post_process/time"):
         if fileN.endswith(".txt"):
-            filename="./post_process/time/translated/{}".format(fileN)
+            filename="./post_process/time/{}".format(fileN)
         else:
             continue
 
@@ -467,45 +574,8 @@ def getSentVariation():
 
     return sentiment
 
-'''
-10. Identify diseases
-'''
-def identifyDiseases(parameter_list):
-    pass
 
-
-'''
-11. frequency of diseases per month 
-'''
-def diseasesFrequency(parameter_list):
-    pass
-
-
-'''
-12. Top 5 diseases analysis 
-'''
-def topDiseases(parameter_list):
-    pass
-
-
-def extract_sentences_of_most_frequent_named_entities():
-    with open("data/most_frequent_named_entities_dump.txt", "r") as f:
-        words_to_check = f.readlines()
-        words_to_check = [x.strip() for x in words_to_check]
-
-    sentences_containing_words = []
-    for sentence in sentences:
-        for word in words_to_check:
-            if sentence.lower().find(word) != -1:
-                sentences_containing_words.append(sentence)
-                break
-
-    with open('./data/most_frequent_named_entity_sentences_dump.txt', 'w+') as f:
-        f.writelines("%s\n" % line for line in sentences_containing_words)
-
-
-def parse_most_frequent_named_entity_sentences():
-    with open('./data/most_frequent_named_entity_sentences_dump.txt', 'r') as f:
+    with open('data/five_diseases_sentences_dump.txt', 'r') as f:
         sentences = f.readlines()
         sentences = [x.strip() for x in sentences]
 
@@ -518,12 +588,13 @@ def parse_most_frequent_named_entity_sentences():
         sentence = sentences[i]
         parsed_sentence = mp.parse(sentence)
         parsed_sentences.append(parsed_sentence)
-
-    for i, parsed_sentence in enumerate(parsed_sentences):
-        import os
-        dump_folder = './data/visualizations/mfnes'
+    
+    import os
+    dump_folder = './data/visualizations/five_diseases'
+    if not os.path.exists(dump_folder):
         os.makedirs(dump_folder)
 
+    for i, parsed_sentence in enumerate(parsed_sentences):
         parser.visualize(
             parsed_sentence, '{}/{}.html'.format(dump_folder, i))
 
@@ -536,6 +607,8 @@ def parse_most_frequent_named_entity_sentences():
 # print(overallTopic(". ".join(sent) for sent in sentences))
 # analyzeFiles()
 # translationFunc()
-getTopicVariation()
-getSentVariation()
+# getTopicVariation()
+# getSentVariation()
 # translateDivided()
+# extract_sentences_of_most_frequent_named_entities()
+# parse_most_frequent_named_entity_sentences()
